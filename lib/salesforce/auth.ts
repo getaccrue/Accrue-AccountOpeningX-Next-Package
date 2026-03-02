@@ -66,3 +66,29 @@ export async function getSalesforceConnection(): Promise<jsforce.Connection> {
 
   return conn
 }
+
+
+// --- OAuth-style helpers (optional) ---
+// Your project currently uses server-to-server login, not browser OAuth.
+// These exports are here to satisfy imports and can be implemented later.
+
+export function getAuthorizationUrl(): string {
+  throw new Error(
+    "getAuthorizationUrl is not supported: this app uses server-to-server Salesforce login (username/password/security token)."
+  );
+}
+
+export async function exchangeCodeForTokens(_code: string): Promise<never> {
+  throw new Error(
+    "exchangeCodeForTokens is not supported: this app uses server-to-server Salesforce login (username/password/security token)."
+  );
+}
+
+export async function isSalesforceAuthorized(): Promise<boolean> {
+  try {
+    await getSalesforceConnection();
+    return true;
+  } catch {
+    return false;
+  }
+}
