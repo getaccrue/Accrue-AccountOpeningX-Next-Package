@@ -5,7 +5,7 @@ frontend:
     preBuild:
       commands:
         - echo "USING AMPLIFY.YML appRoot=apps/web"
-        - node -e "console.log('SF_ENV_BUILD_CHECK', { LOGIN: !!process.env.SALESFORCE_LOGIN_URL, USER: !!process.env.SALESFORCE_USERNAME, PASS: !!process.env.SALESFORCE_PASSWORD, TOKEN: !!process.env.SALESFORCE_SECURITY_TOKEN })"
+        - 'node -e "console.log(\"SF_ENV_BUILD_CHECK\", { LOGIN: Boolean(process.env.SALESFORCE_LOGIN_URL), USER: Boolean(process.env.SALESFORCE_USERNAME), PASS: Boolean(process.env.SALESFORCE_PASSWORD), TOKEN: Boolean(process.env.SALESFORCE_SECURITY_TOKEN) })"'
         - node -v
         - npm -v
         - npm i -g pnpm@9.15.5
