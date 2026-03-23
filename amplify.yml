@@ -1,9 +1,11 @@
 version: 1
 frontend:
-  appRoot: apps/web   # <-- change this to your actual Next.js folder
+  appRoot: apps/web
   phases:
     preBuild:
       commands:
+        - echo "USING AMPLIFY.YML appRoot=apps/web"
+        - node -e "console.log('SF_ENV_BUILD_CHECK', { LOGIN: !!process.env.SALESFORCE_LOGIN_URL, USER: !!process.env.SALESFORCE_USERNAME, PASS: !!process.env.SALESFORCE_PASSWORD, TOKEN: !!process.env.SALESFORCE_SECURITY_TOKEN })"
         - node -v
         - npm -v
         - npm i -g pnpm@9.15.5
