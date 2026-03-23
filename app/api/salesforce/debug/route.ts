@@ -1,41 +1,57 @@
 import { NextResponse } from "next/server"
-import { isSalesforceConfigured } from "@/lib/config"
-import { isSalesforceAuthorized } from "@/lib/salesforce/auth"
+import { getSalesforceConnection } from "@/lib/salesforce/auth"
 
-/**
- * GET /api/salesforce/debug
- *
- * Returns the current Salesforce connection status so you can
- * quickly check whether the app is using mock data or live SF.
- */
 export async function GET() {
-  const configured = isSalesforceConfigured()
-  const authorized = isSalesforceAuthorized()
-
-  const status = {
-    mode: !configured ? "MOCK" : !authorized ? "CONFIGURED_BUT_NOT_AUTHORIZED" : "LIVE_SALESFORCE",
-    envVars: {
-      SALESFORCE_INSTANCE_URL: process.env.SALESFORCE_INSTANCE_URL ? "SET" : "MISSING",
-      SALESFORCE_CLIENT_ID: process.env.SALESFORCE_CLIENT_ID ? "SET" : "MISSING",
-      SALESFORCE_CLIENT_SECRET: process.env.SALESFORCE_CLIENT_SECRET
-        ? process.env.SALESFORCE_CLIENT_SECRET.startsWith("YOUR_")
-          ? "PLACEHOLDER"
-          : "SET"
-        : "MISSING",
-    },
-    isSalesforceConfigured: configured,
-    isSalesforceAuthorized: authorized,
-    explanation: !configured
-      ? "App is using MOCK DATA. Set all 3 env vars with real values to enable Salesforce."
-      : !authorized
-        ? "Env vars are set but OAuth login has not been completed. Visit /api/salesforce/oauth/login to authorize."
-        : "App is connected to LIVE SALESFORCE and fetching real data.",
-    nextStep: !configured
-      ? "Add SALESFORCE_INSTANCE_URL, SALESFORCE_CLIENT_ID, and SALESFORCE_CLIENT_SECRET to .env.local"
-      : !authorized
-        ? "Visit /api/salesforce/oauth/login in your browser to complete the OAuth flow"
-        : "All good! Products and disclosures are coming from Salesforce.",
+  const envVars = {
+    SALESFORCE_LOGIN_URL: process.env.SALESFORCE_LOGIN_URL ? "SET" : "MISSING",
+    SALESFORCE_USERNAME: process.env.SALESFORCE_USERNAME ? "SET" : "MISSING",
+    SALESFORCE_PASSWORD: process.env.SALESFORCE_PASSWORD ? "SET" : "MISSING",
+    SALESFORCE_SECURITY_TOKEN: process.env.SALESFORCE_SECURITY_TOKEN ? "SET" : "MISSING",
   }
 
-  return NextResponse.json(status, { status: 200 })
+  const configured =
+    envVars.SALESFORCE_USERNAME === "SET" &&
+    envVars.SALESFORCE_PASSWORD === "SET" &&
+    envVars.SALESFORCE_SECURITY_TOKEN === "SET"
+
+  if (!configured) {
+    return NextResponse.json({
+      mode: "MOCK_OR_NOT_CONFIGURED",
+      envVars,
+      isSalesforceConfigured: configured,
+      explanation:
+        "Missing SOAP-login env vars. Set SALESFORCE_USERNAME, SALESFORCE_PASSWORD, SALESFORCE_SECURITY_TOKEN (and optionally SALESFORCE_LOGIN_URL).",
+      nextStep:
+        "Add these env vars to Amplify (branch env vars) and redeploy, or to .env.local for local dev.",
+    })
+  }
+
+  try {
+    const conn = await getSalesforceConnection()
+    const ident = await conn.identity()
+
+    return NextResponse.json({
+      mode: "LIVE_SALESFORCE",
+      envVars,
+      isSalesforceConfigured: true,
+      identity: {
+        username: ident.username,
+        orgId: ident.organization_id,
+        userId: ident.user_id,
+      },
+      explanation: "Successfully logged into Salesforce using username+password+security token.",
+      nextStep: "If data is still missing, the issue is object permissions or SOQL query logic.",
+    })
+  } catch (e: any) {
+    return NextResponse.json({
+      mode: "CONFIGURED_BUT_LOGIN_FAILED",
+      envVars,
+      isSalesforceConfigured: true,
+      error: e?.message ?? String(e),
+      explanation:
+        "Env vars exist but Salesforce login failed (bad creds, wrong login URL, expired token, or org security restriction).",
+      nextStep:
+        "Use SALESFORCE_LOGIN_URL=https://login.salesforce.com (or https://test.salesforce.com for sandbox) and reset security token, then update env vars in Amplify.",
+    })
+  }
 }
