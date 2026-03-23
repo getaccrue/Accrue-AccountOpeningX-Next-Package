@@ -6,7 +6,14 @@ frontend:
       commands:
         - echo "USING AMPLIFY.YML appRoot=apps/web"
         - 'node -e "console.log(\"SF_ENV_BUILD_CHECK\", { LOGIN: Boolean(process.env.SALESFORCE_LOGIN_URL), USER: Boolean(process.env.SALESFORCE_USERNAME), PASS: Boolean(process.env.SALESFORCE_PASSWORD), TOKEN: Boolean(process.env.SALESFORCE_SECURITY_TOKEN) })"'
-        - node -v
+        # Write runtime env vars into a file Next.js will load
+        - |
+          cat > .env.production <<EOF
+          SALESFORCE_LOGIN_URL=$SALESFORCE_LOGIN_URL
+          SALESFORCE_USERNAME=$SALESFORCE_USERNAME
+          SALESFORCE_PASSWORD=$SALESFORCE_PASSWORD
+          SALESFORCE_SECURITY_TOKEN=$SALESFORCE_SECURITY_TOKEN
+          EOF
         - npm -v
         - npm i -g pnpm@9.15.5
         - pnpm -v
