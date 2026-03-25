@@ -53,6 +53,7 @@ export interface DisclosureAttestation {
 
 export interface AccountApplication {
   id: string
+  accountnumber?: string | null 
   status: ApplicationStatus
   selectedProductId: string
   personalInfo?: PersonalInfo
