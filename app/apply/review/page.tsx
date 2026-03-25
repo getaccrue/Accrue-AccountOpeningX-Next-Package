@@ -65,14 +65,16 @@ export default function ReviewPage() {
 
       const result = await response.json()
 
-      // Store the Salesforce-assigned application ID
-      if (result.id) {
-        setApplicationId(result.id)
-      }
+		// Prefer your reference number; fall back to SF id if it's not ready yet
+		const referenceNumber = result.accountnumber ?? result.accountNumber ?? result.coreAccountId ?? result.id
 
-      toast.success("Application submitted successfully!", {
-        description: `Application ID: ${result.id}`,
-      })
+		if (referenceNumber) {
+		  setApplicationId(referenceNumber)
+		}
+
+		toast.success("Application submitted successfully!", {
+		  description: `Reference Number: ${referenceNumber}`,
+		})
 
       setCurrentStep("complete")
       router.push("/apply/complete")
