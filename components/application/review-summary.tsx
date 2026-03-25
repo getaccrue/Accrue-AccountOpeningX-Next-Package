@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import {
   CreditCard,
   User,
@@ -54,6 +55,16 @@ function DataRow({ label, value }: { label: string; value: string }) {
   )
 }
 
+function titleCaseMaybe(value: unknown): string {
+  const s = typeof value === "string" ? value : ""
+  if (!s) return "N/A"
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+function safeString(value: unknown, fallback = "N/A"): string {
+  return typeof value === "string" && value.trim() ? value : fallback
+}
+
 export function ReviewSummary({
   product,
   personalInfo,
@@ -63,6 +74,46 @@ export function ReviewSummary({
   linkedAccountMask,
   linkedInstitutionName,
 }: ReviewSummaryProps) {
+  const fullName =
+    personalInfo?.firstName || personalInfo?.lastName
+      ? `${safeString(personalInfo?.firstName, "")} ${safeString(
+          personalInfo?.lastName,
+          ""
+        )}`.trim() || "N/A"
+      : "N/A"
+
+  const addr = personalInfo?.address
+  const addressText = addr
+    ? `${safeString(addr.street, "")}${
+        addr.unit ? `, ${addr.unit}` : ""
+      }, ${safeString(addr.city, "")}, ${safeString(
+        addr.state,
+        ""
+      )} ${safeString(addr.zipCode, "")}`.trim()
+    : "N/A"
+
+  const fundingAmountText =
+    typeof fundingAmount === "number" ? `$${fundingAmount.toFixed(2)}` : "N/A"
+
+  const fundingFromText =
+    linkedInstitutionName && linkedAccountMask
+      ? `${linkedInstitutionName} (****${linkedAccountMask})`
+      : linkedInstitutionName
+        ? linkedInstitutionName
+        : "N/A"
+
+  const kycLabel =
+    kycStatus === "passed"
+      ? "Identity Verified"
+      : kycStatus === "review"
+        ? "Under Review"
+        : kycStatus
+          ? `Verification Status: ${kycStatus}`
+          : "Verification Status: N/A"
+
+  const kycIconClass =
+    kycStatus === "passed" ? "text-success" : "text-warning"
+
   return (
     <div className="flex flex-col gap-6">
       {/* Product */}
@@ -73,12 +124,16 @@ export function ReviewSummary({
         />
         <div className="rounded-lg border bg-card p-4">
           <DataRow label="Product" value={product?.name ?? "N/A"} />
+          <DataRow label="Type" value={titleCaseMaybe(product?.type)} />
           <DataRow
-            label="Type"
-            value={product ? product.type.charAt(0).toUpperCase() + product.type.slice(1) : "N/A"}
+            label="Interest Rate"
+            value={
+              product?.interestRate != null
+                ? `${product.interestRate}% APY`
+                : "N/A"
+            }
           />
-          <DataRow label="Interest Rate" value={product ? `${product.interestRate}% APY` : "N/A"} />
-          {product?.termMonths && (
+          {product?.termMonths != null && product.termMonths !== 0 && (
             <DataRow label="Term" value={`${product.termMonths} months`} />
           )}
         </div>
@@ -93,22 +148,15 @@ export function ReviewSummary({
           title="Personal Information"
         />
         <div className="rounded-lg border bg-card p-4">
+          <DataRow label="Name" value={fullName} />
+          <DataRow label="Email" value={safeString(personalInfo?.email)} />
+          <DataRow label="Phone" value={safeString(personalInfo?.phone)} />
           <DataRow
-            label="Name"
-            value={personalInfo ? `${personalInfo.firstName} ${personalInfo.lastName}` : "N/A"}
+            label="Date of Birth"
+            value={safeString(personalInfo?.dateOfBirth)}
           />
-          <DataRow label="Email" value={personalInfo?.email ?? "N/A"} />
-          <DataRow label="Phone" value={personalInfo?.phone ?? "N/A"} />
-          <DataRow label="Date of Birth" value={personalInfo?.dateOfBirth ?? "N/A"} />
           <DataRow label="SSN" value="***-**-****" />
-          <DataRow
-            label="Address"
-            value={personalInfo ? `${personalInfo.address.street}${
-              personalInfo.address.unit ? `, ${personalInfo.address.unit}` : ""
-            }, ${personalInfo.address.city}, ${personalInfo.address.state} ${
-              personalInfo.address.zipCode
-            }` : "N/A"}
-          />
+          <DataRow label="Address" value={addressText} />
         </div>
       </div>
 
@@ -122,17 +170,9 @@ export function ReviewSummary({
         />
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center gap-2">
-            <CheckCircle2
-              className={`h-4 w-4 ${
-                kycStatus === "passed" ? "text-success" : "text-warning"
-              }`}
-            />
+            <CheckCircle2 className={`h-4 w-4 ${kycIconClass}`} />
             <span className="text-sm font-medium text-foreground">
-              {kycStatus === "passed"
-                ? "Identity Verified"
-                : kycStatus === "review"
-                  ? "Under Review"
-                  : "Verification Status: " + kycStatus}
+              {kycLabel}
             </span>
           </div>
         </div>
@@ -148,18 +188,21 @@ export function ReviewSummary({
         />
         <div className="rounded-lg border bg-card p-4">
           <div className="flex flex-col gap-2">
-            {disclosureAttestations.map((att) => (
-              <div
-                key={att.disclosureId}
-                className="flex items-center gap-2"
-              >
-                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-                <span className="text-sm text-foreground">{att.title}</span>
-                <span className="text-xs text-muted-foreground">
-                  ({new Date(att.attestedAt).toLocaleDateString()})
-                </span>
-              </div>
-            ))}
+            {disclosureAttestations.length === 0 ? (
+              <span className="text-sm text-muted-foreground">None</span>
+            ) : (
+              disclosureAttestations.map((att) => (
+                <div key={att.disclosureId} className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                  <span className="text-sm text-foreground">
+                    {safeString(att.title, "Disclosure")}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    ({new Date(att.attestedAt).toLocaleDateString()})
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -173,14 +216,8 @@ export function ReviewSummary({
           title="Initial Deposit"
         />
         <div className="rounded-lg border bg-card p-4">
-          <DataRow
-            label="Amount"
-            value={fundingAmount ? `$${fundingAmount.toFixed(2)}` : "N/A"}
-          />
-          <DataRow
-            label="From"
-            value={linkedInstitutionName ? `${linkedInstitutionName} (****${linkedAccountMask})` : "N/A"}
-          />
+          <DataRow label="Amount" value={fundingAmountText} />
+          <DataRow label="From" value={fundingFromText} />
           <DataRow label="Method" value="ACH Transfer" />
           <DataRow label="Estimated Arrival" value="2-3 Business Days" />
         </div>
