@@ -115,7 +115,7 @@ export default function KycPage() {
                 Verify Your Identity
               </h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                We use Plaid to securely verify your identity. You may be asked
+                We use Vouched to securely verify your identity. You may be asked
                 to scan a government-issued ID and take a selfie. This process
                 typically takes 2-3 minutes.
               </p>
@@ -129,7 +129,7 @@ export default function KycPage() {
               Start Verification
             </Button>
             <p className="text-center text-xs text-muted-foreground">
-              {"Your data is encrypted and handled securely by Plaid. We do not store images of your ID or selfie."}
+              {"Your data is encrypted and handled securely by Vouched. We do not store images of your ID or selfie."}
             </p>
           </div>
         )}

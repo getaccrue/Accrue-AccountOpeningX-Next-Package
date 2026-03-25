@@ -10,7 +10,7 @@ import type {
 } from "./salesforce/types"
 
 export const MOCK_BANK_CONFIG: BankConfig = {
-  bankName: "First National Bank",
+  bankName: "Accrue Bank",
   logoUrl: "",
   primaryColor: "#0F4C81",
   secondaryColor: "#1A1A2E",
