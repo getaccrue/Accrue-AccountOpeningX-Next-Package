@@ -13,7 +13,10 @@ import { Button } from "@/components/ui/button"
 import { Check, Wallet, PiggyBank, TrendingUp, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const productTypeConfig = {
+const productTypeConfig: Record<
+  string,
+  { icon: React.ComponentType<{ className?: string }>; label: string }
+> = {
   checking: {
     icon: Wallet,
     label: "Checking",
@@ -38,14 +41,13 @@ interface ProductCardProps {
   onSelect: (product: DepositProduct) => void
 }
 
-export function ProductCard({
-  product,
-  isSelected,
-  onSelect,
-}: ProductCardProps) {
-  const config = productTypeConfig[product.type]
-  //const Icon = config.icon
-  //console.log("termMonths:", product.termMonths, typeof product.termMonths, product)
+export function ProductCard({ product, isSelected, onSelect }: ProductCardProps) {
+  const config = productTypeConfig[product.type ?? ""] // safe lookup
+  const Icon = config?.icon
+  const typeLabel =
+    config?.label ??
+    (product.type ? product.type.replace(/_/g, " ") : "N/A") // fallback label
+
   return (
     <Card
       className={cn(
@@ -68,19 +70,22 @@ export function ProductCard({
           <Check className="h-3.5 w-3.5 text-primary-foreground" />
         </div>
       )}
+
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            
+            {Icon ? <Icon className="h-5 w-5 text-primary" /> : null}
           </div>
+
           <div>
             <Badge variant="secondary" className="mb-1 text-xs">
-              
+              {typeLabel}
             </Badge>
             <CardTitle className="text-lg">{product.name}</CardTitle>
           </div>
         </div>
       </CardHeader>
+
       <CardContent className="flex flex-col gap-4">
         <CardDescription className="text-sm leading-relaxed">
           {product.description}
@@ -88,25 +93,25 @@ export function ProductCard({
 
         <div className="flex items-baseline gap-1">
           <span className="text-3xl font-bold text-foreground">
-            {product.interestRate.toFixed(2)}% 
+            {Number(product.interestRate).toFixed(2)}%
           </span>
           <span className="text-sm text-muted-foreground">APY</span>
         </div>
 
         <div className="text-sm text-muted-foreground">
           {"Min. opening deposit: $"}
-          {product.minOpeningDeposit.toLocaleString()}
-          {product.termMonths && (
+          {Number(product.minOpeningDeposit).toLocaleString()}
+          {product.termMonths ? (
             <span className="ml-2">
               {"| "}
               {product.termMonths}
               {"-month term"}
             </span>
-          )}
+          ) : null}
         </div>
 
         <ul className="flex flex-col gap-1.5">
-          {product.features.map((feature) => (
+          {(product.features ?? []).map((feature) => (
             <li
               key={feature}
               className="flex items-start gap-2 text-sm text-muted-foreground"
