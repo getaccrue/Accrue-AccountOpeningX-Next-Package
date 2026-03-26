@@ -49,8 +49,7 @@ export default function LandingPage() {
               Secure Verification
             </h3>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Bank-grade identity verification powered by Plaid keeps your
-              information safe.
+              Bank-grade identity verification keeps your information safe.
             </p>
           </div>
           <div className="flex flex-col items-center gap-3 text-center">
