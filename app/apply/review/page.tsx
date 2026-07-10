@@ -12,10 +12,12 @@ export default function ReviewPage() {
   const router = useRouter()
   const {
     selectedProduct,
+    applicationId,
     personalInfo,
     kycStatus,
     kycVerificationId,
     disclosureAttestations,
+    requestedDocumentUploads,
     fundingStatus,
     fundingTransferId,
     fundingAmount,
@@ -38,10 +40,12 @@ export default function ReviewPage() {
     // Build the complete application payload from all form steps
     const applicationPayload = {
       selectedProductId: selectedProduct?.id,
+      applicationId,
       personalInfo,
       kycStatus,
       kycVerificationId,
       disclosureAttestations,
+      requestedDocumentUploads,
       fundingStatus,
       fundingTransferId,
       fundingAmount,
@@ -108,6 +112,7 @@ export default function ReviewPage() {
           personalInfo={personalInfo}
           kycStatus={kycStatus}
           disclosureAttestations={disclosureAttestations}
+          requestedDocumentUploads={requestedDocumentUploads}
           fundingAmount={fundingAmount}
           linkedAccountMask={linkedAccountMask}
           linkedInstitutionName={linkedInstitutionName}

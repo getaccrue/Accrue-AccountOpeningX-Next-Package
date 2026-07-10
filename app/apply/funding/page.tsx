@@ -211,7 +211,7 @@ export default function FundingPage() {
       <div className="flex items-center justify-between pt-4">
         <Button
           variant="outline"
-          onClick={() => router.push("/apply/disclosures")}
+          onClick={() => router.push("/apply/requested-items")}
           className="gap-2"
         >
           <ArrowLeft className="h-4 w-4" />

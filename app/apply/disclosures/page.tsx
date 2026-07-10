@@ -74,7 +74,7 @@ export default function DisclosuresPage() {
   const handleContinue = () => {
     if (!allReady) return
     setDisclosureAttestations(pendingAttestations.current)
-    router.push("/apply/funding")
+    router.push("/apply/requested-items")
   }
 
   return (

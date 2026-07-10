@@ -5,6 +5,7 @@ import type {
   DepositProduct,
   Disclosure,
   AccountApplication,
+  RequestedDocumentUpload,
 } from "./types"
 
 const API_BASE = "/accrue/dao/v1"
@@ -90,6 +91,19 @@ export async function updateApplication(
     method: "PATCH",
     body: JSON.stringify(data),
   })
+}
+
+export async function createRequestedDocuments(
+  applicationId: string,
+  requestedDocumentUploads: RequestedDocumentUpload[]
+): Promise<{ ids: string[]; fileErrors?: string[] }> {
+  return sfFetch<{ ids: string[]; fileErrors?: string[] }>(
+    `/applications/${applicationId}/requested-documents`,
+    {
+      method: "POST",
+      body: JSON.stringify({ requestedDocumentUploads }),
+    }
+  )
 }
 
 export async function submitApplication(id: string): Promise<AccountApplication> {
