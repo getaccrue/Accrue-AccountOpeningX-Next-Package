@@ -13,6 +13,7 @@ import type {
   KycStatus,
   FundingStatus,
   DisclosureAttestation,
+  RequestedDocumentUpload,
 } from "./salesforce/types"
 
 export type ApplicationStep =
@@ -20,6 +21,7 @@ export type ApplicationStep =
   | "personal"
   | "kyc"
   | "disclosures"
+  | "requestedItems"
   | "funding"
   | "review"
   | "complete"
@@ -29,6 +31,7 @@ export const STEPS: { key: ApplicationStep; label: string; path: string }[] = [
   { key: "personal", label: "Personal Info", path: "/apply/personal" },
   { key: "kyc", label: "Verify Identity", path: "/apply/kyc" },
   { key: "disclosures", label: "Disclosures", path: "/apply/disclosures" },
+  { key: "requestedItems", label: "Requested Items", path: "/apply/requested-items" },
   { key: "funding", label: "Fund Account", path: "/apply/funding" },
   { key: "review", label: "Review", path: "/apply/review" },
   { key: "complete", label: "Complete", path: "/apply/complete" },
@@ -42,6 +45,7 @@ interface ApplicationState {
   kycStatus: KycStatus | null
   kycVerificationId: string | null
   disclosureAttestations: DisclosureAttestation[]
+  requestedDocumentUploads: RequestedDocumentUpload[]
   fundingStatus: FundingStatus | null
   fundingTransferId: string | null
   fundingAmount: number | null
@@ -56,6 +60,7 @@ interface ApplicationContextValue extends ApplicationState {
   setPersonalInfo: (info: PersonalInfo) => void
   setKycResult: (status: KycStatus, verificationId: string) => void
   setDisclosureAttestations: (attestations: DisclosureAttestation[]) => void
+  setRequestedDocumentUpload: (upload: RequestedDocumentUpload | null) => void
   setFundingResult: (
     status: FundingStatus,
     transferId: string,
@@ -77,6 +82,7 @@ const initialState: ApplicationState = {
   kycStatus: null,
   kycVerificationId: null,
   disclosureAttestations: [],
+  requestedDocumentUploads: [],
   fundingStatus: null,
   fundingTransferId: null,
   fundingAmount: null,
@@ -117,6 +123,29 @@ export function ApplicationProvider({ children }: { children: ReactNode }) {
   const setDisclosureAttestations = useCallback(
     (attestations: DisclosureAttestation[]) => {
       setState((prev) => ({ ...prev, disclosureAttestations: attestations }))
+    },
+    []
+  )
+
+  const setRequestedDocumentUpload = useCallback(
+    (upload: RequestedDocumentUpload | null) => {
+      setState((prev) => {
+        if (!upload) {
+          return {
+            ...prev,
+            requestedDocumentUploads: [],
+          }
+        }
+
+        const nextUploads = prev.requestedDocumentUploads.filter(
+          (existing) => existing.documentName !== upload.documentName
+        )
+
+        return {
+          ...prev,
+          requestedDocumentUploads: [...nextUploads, upload],
+        }
+      })
     },
     []
   )
@@ -166,6 +195,7 @@ export function ApplicationProvider({ children }: { children: ReactNode }) {
         setPersonalInfo,
         setKycResult,
         setDisclosureAttestations,
+        setRequestedDocumentUpload,
         setFundingResult,
         getStepIndex,
         canAccessStep,

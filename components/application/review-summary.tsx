@@ -15,6 +15,7 @@ import type {
   PersonalInfo,
   KycStatus,
   DisclosureAttestation,
+  RequestedDocumentUpload,
 } from "@/lib/salesforce/types"
 
 interface ReviewSummaryProps {
@@ -22,6 +23,7 @@ interface ReviewSummaryProps {
   personalInfo: PersonalInfo | null
   kycStatus: KycStatus | null
   disclosureAttestations: DisclosureAttestation[]
+  requestedDocumentUploads: RequestedDocumentUpload[]
   fundingAmount: number | null
   linkedAccountMask: string | null
   linkedInstitutionName: string | null
@@ -70,6 +72,7 @@ export function ReviewSummary({
   personalInfo,
   kycStatus,
   disclosureAttestations,
+  requestedDocumentUploads,
   fundingAmount,
   linkedAccountMask,
   linkedInstitutionName,
@@ -204,6 +207,35 @@ export function ReviewSummary({
               ))
             )}
           </div>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Requested Items */}
+      <div className="flex flex-col gap-3">
+        <SectionHeader
+          icon={<FileText className="h-4 w-4 text-primary" />}
+          title="Requested Items"
+        />
+        <div className="rounded-lg border bg-card p-4">
+          <DataRow
+            label="Driver License"
+            value={
+              requestedDocumentUploads.find(
+                (upload) => upload.documentName === "Driver License"
+              )?.fileName ?? "N/A"
+            }
+          />
+          <DataRow
+            label="Income Tax Related Document"
+            value={
+              requestedDocumentUploads.find(
+                (upload) =>
+                  upload.documentName === "Income Tax Related Document"
+              )?.fileName ?? "N/A"
+            }
+          />
         </div>
       </div>
 

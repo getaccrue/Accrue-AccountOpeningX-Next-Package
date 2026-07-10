@@ -51,6 +51,14 @@ export interface DisclosureAttestation {
   pdfUrl: string
 }
 
+export interface RequestedDocumentUpload {
+  documentName: string
+  fileName: string
+  contentType: string
+  size: number
+  base64: string
+}
+
 export interface AccountApplication {
   id: string
   accountnumber?: string | null 
@@ -60,6 +68,7 @@ export interface AccountApplication {
   kycStatus?: KycStatus
   kycVerificationId?: string
   disclosureAttestations?: DisclosureAttestation[]
+  requestedDocumentUploads?: RequestedDocumentUpload[]
   fundingStatus?: FundingStatus
   fundingTransferId?: string
   fundingAmount?: number
